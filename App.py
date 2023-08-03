@@ -1,6 +1,6 @@
 from transitions import Machine
-from transitions.extensions.states import add_state_features, Timeout
-import time
+from transitions.extensions.states import add_state_features
+from transitions.extensions.asyncio import AsyncTimeout, AsyncMachine
 import asyncio
 from websockets.server import serve
 import json
@@ -13,8 +13,8 @@ CONST_HOST = 'localhost'
 CONST_PORT = 47782
 
 
-@add_state_features(Timeout)
-class CustomStateMachine(Machine):
+@add_state_features(AsyncTimeout)
+class CustomStateMachine(AsyncMachine):
     pass
 
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                 await websocket.send(baggageStorage.state)
                 onStateChangeEvent.clear()
 
-        waiterTask = asyncio.create_task(onStateChangeWaiter(onStateChangeEvent))
+        asyncio.create_task(onStateChangeWaiter(onStateChangeEvent))
 
         async for message in websocket:
             event = json.loads(message)
@@ -77,9 +77,9 @@ if __name__ == '__main__':
             
             match event['type']:
                 case 'provide_password':
-                    baggageStorage.provide_password(event['value'])
+                    await baggageStorage.provide_password(event['value'])
                 case 'close':
-                    baggageStorage.close_button_pressed()
+                    await baggageStorage.close_button_pressed()
                 case _:
                     print('error')
 
