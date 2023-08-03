@@ -44,7 +44,8 @@ class BaggageStorage(object):
             states=BaggageStorage.states,
             transitions=BaggageStorage.transitions,
             initial='enter password',
-            after_state_change='notifyClient'
+            after_state_change='notifyClient',
+            queued=True
         )
 
     def isCorrectPassword(self, password = ''):
