@@ -57,6 +57,7 @@ class BaggageStorage(object):
 if __name__ == '__main__':
 
     async def serveClient(websocket):
+        print('client connected')
         onStateChangeEvent = asyncio.Event()
         baggageStorage = BaggageStorage(CONST_PASSWORD, onStateChangeEvent)
         await asyncio.sleep(0.1)
@@ -72,7 +73,6 @@ if __name__ == '__main__':
 
         async for message in websocket:
             event = json.loads(message)
-            print('from client message')
             
             match event['type']:
                 case 'provide_password':
