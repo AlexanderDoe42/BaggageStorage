@@ -1,9 +1,8 @@
-from transitions import Machine
+import asyncio
+import json
 from transitions.extensions.states import add_state_features
 from transitions.extensions.asyncio import AsyncTimeout, AsyncMachine
-import asyncio
 from websockets.server import serve
-import json
 
 
 CONST_PASSWORD = '1234'
@@ -37,9 +36,9 @@ class BaggageStorage(object):
     ]
 
     def __init__(self, password, onStateChangeEvent):
-
         self.onStateChangeEvent = onStateChangeEvent
         self.password = password
+
         self.machine = CustomStateMachine(
             model=self,
             states=BaggageStorage.states,
@@ -49,7 +48,7 @@ class BaggageStorage(object):
         )
 
     def isCorrectPassword(self, password = ''):
-        return password == CONST_PASSWORD
+        return password == self.password
     
     def notifyClient(self, e = ''):
         self.onStateChangeEvent.set()
@@ -57,7 +56,7 @@ class BaggageStorage(object):
 
 if __name__ == '__main__':
 
-    async def echo(websocket):
+    async def serveClient(websocket):
         onStateChangeEvent = asyncio.Event()
         baggageStorage = BaggageStorage(CONST_PASSWORD, onStateChangeEvent)
         await asyncio.sleep(0.1)
@@ -83,8 +82,8 @@ if __name__ == '__main__':
                 case _:
                     print('error')
 
-    async def main():
-        async with serve(echo, CONST_HOST, CONST_PORT):
+    async def runSocket():
+        async with serve(serveClient, CONST_HOST, CONST_PORT):
             await asyncio.Future()
 
-    asyncio.run(main())
+    asyncio.run(runSocket())
